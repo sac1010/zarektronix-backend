@@ -49,4 +49,28 @@ const signUp = async (req, res) => {
   }
 };
 
-module.exports = { signUp };
+const verifyEmail = async (req, res) => {
+  const { token } = req.params;
+
+  try {
+    // Find the user with the verification token
+    const user = await User.findOne({ verificationToken: token });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found or already verified.' });
+    }
+
+    // Update user's verification status
+    user.isVerified = true;
+    user.verificationToken = undefined; 
+
+    await user.save();
+
+    return res.status(200).json({ message: 'Email verification successful.' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+module.exports = { signUp, verifyEmail };
